@@ -3,6 +3,6 @@ Sesion 1:
 Pre: install shadcn (styles) X
 1. Autenticacion (auth js) X
 2. Prisma ORM con Mongo db (base de datos + ORM) X
-3. User onboarding
-4. Users can search for any service in their vecinity
-5. Interactive map 
+3. Setup auth flow
+4. Basic  app functionalities
+
