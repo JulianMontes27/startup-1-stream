@@ -3,6 +3,10 @@ Sesion 1:
 Pre: install shadcn (styles) X
 1. Autenticacion (auth js) X
 2. Prisma ORM con Mongo db (base de datos + ORM) X
-3. Setup auth flow
-4. Basic  app functionalities
+3. Setup auth flow X
+4. Basic  app functionalities:
+- Usuario entra al app
+- Poder buscar en un input el servicio que quiera
+- Los usuarios pueden ofrecer servicios y buscar
+
 

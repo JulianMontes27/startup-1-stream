@@ -1,9 +1,4 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
+// This is your Prisma schema file
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,29 +8,27 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-//run npx prisma generate so the prisma client gets updated with new models
-//then run npx prisma db push so that the Mongodb is updated
 model User {
   id            String          @id @default(auto()) @map("_id") @db.ObjectId
   name          String?
-  email         String         @unique
+  email         String          @unique
   emailVerified DateTime?
   image         String?
 
-  role          String?
-  
   accounts      Account[]
   sessions      Session[]
-  
-  // // Optional for WebAuthn support
-  // Authenticator Authenticator[]
- 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  offeredServices Service[] @relation("offeredServices")
+  soughtServices  Service[] @relation("soughtServices")
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   @@map("users")
 }
- 
+
+
+
+// Model for accounts (social login, etc.)
 model Account {
   id                String  @id @default(auto()) @map("_id") @db.ObjectId
   userId            String  @db.ObjectId
@@ -59,7 +52,7 @@ model Account {
   @@map("accounts")
 }
 
-//tell server that the user is logged in
+// Model for sessions (tracking user sessions)
 model Session {
   id           String   @id @default(auto()) @map("_id") @db.ObjectId
   sessionToken String   @unique
@@ -67,13 +60,13 @@ model Session {
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
  
-  createdAt DateTime @default(now()) //cuando el usuario inicia sesion
+  createdAt DateTime @default(now()) // when the user logs in
   updatedAt DateTime @updatedAt
 
   @@map("sessions")
 }
 
- 
+// Model for email verification tokens
 model VerificationToken {
   id         String   @id @default(auto()) @map("_id") @db.ObjectId
   identifier String
@@ -82,5 +75,31 @@ model VerificationToken {
  
   @@unique([identifier, token])
   @@map("verification_tokens")
+}
+
+// Model for services (both offered and sought)
+model Service {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String
+  category    String
+  price       Float
+  status      String
+  location    Location?
+  offererId   String   @db.ObjectId
+  seekerId    String?  @db.ObjectId
+  offerer     User     @relation("offeredServices", fields: [offererId], references: [id], onDelete: Cascade)
+  seeker      User?    @relation("soughtServices", fields: [seekerId], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+
+model Location {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  latitude  Float
+  longitude Float
+  service   Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  serviceId String   @unique @db.ObjectId
 }
 
