@@ -38,7 +38,8 @@ const formSchema = z.object({
   category: z.string().min(0).max(40),
   price: z.string().min(0).max(40),
   status: z.string().min(0).max(40),
-  location: z.string().min(0).max(40),
+  latitude: z.string().min(0).max(40),
+  longitude: z.string().min(0).max(50),
 });
 
 const AddOrderModal = () => {
@@ -59,7 +60,8 @@ const AddOrderModal = () => {
       category: "",
       price: "",
       status: "",
-      location: "",
+      latitude: "",
+      longitude: "",
     },
   });
   //onsubmit hanlder
@@ -204,7 +206,28 @@ const AddOrderModal = () => {
               />
               <FormField
                 control={form.control}
-                name="location"
+                name="longitude"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Cantidad de items</FormLabel>
+                    <FormControl>
+                      <Input
+                        className="bg-white focus:ring-0 text-black "
+                        placeholder="1"
+                        {...field}
+                        disabled={form.formState.isSubmitting}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      Este es el numero de pedidos en la orden.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />{" "}
+              <FormField
+                control={form.control}
+                name="latitude"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Cantidad de items</FormLabel>
@@ -223,7 +246,6 @@ const AddOrderModal = () => {
                   </FormItem>
                 )}
               />
-
               <Button
                 type="submit"
                 className="w-full transform transition-transform duration-300 ease-in-out hover:scale-105 px-4 py-2 rounded-md text-white mt-3"

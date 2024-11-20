@@ -13,32 +13,27 @@ const UserHomePage = async () => {
   if (!user) return null;
 
   //retrieve the signed in User's services (single object with nested arrays)
-  const userWithServices = await prisma.user.findUnique({
+  const services = await prisma.service.findMany({
     where: {
-      id: user.id,
-    },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      offeredServices: true, // Get services offered by the user
-      soughtServices: true, // Get services sought by the user
+      offererId: user.id,
     },
   });
-
   return (
     <div className="sm:p-2">
       <section>
         {/* show if the user is currently offering services */}
         <ul>
-          {userWithServices?.offeredServices.length === 0 ? (
+          {services?.length === 0 ? (
             <AddServiceBtn />
           ) : (
-            userWithServices?.offeredServices.map((serv) => (
-              <Link href={`$dashboard/${user.id}/offered-service/${serv.id}`}>
-                {serv.title}
-              </Link>
-            ))
+            services?.map((serv) => {
+              console.log(serv);
+              return (
+                <Link href={`$dashboard/${user.id}/offered-service/${serv.id}`}>
+                  {serv.title}
+                </Link>
+              );
+            })
           )}
         </ul>
       </section>

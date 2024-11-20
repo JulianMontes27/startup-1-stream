@@ -1,9 +1,11 @@
 Roadmap
 Sesion 1: 
-Pre: install shadcn (styles) X
-1. Autenticacion (auth js) X
-2. Prisma ORM con Mongo db (base de datos + ORM) X
-3. Setup auth flow X
-4. State management (Zustand)
-5. Get user's geo location and display an input to search for any active service
+Pre: install shadcn (styles) DONE
+1. Autenticacion (auth js) DONE
+2. Prisma ORM con Mongo db (base de datos + ORM) DONE
+3. Setup auth flow DONE
+4. State management (Zustand) DONE
+
+
+5. Get user's geo location and display an input to search for any active service TOMORROW %%%%%
 

@@ -14,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { signOut } from "@/lib/auth";
-import { LogOut, Settings, ShieldCheck } from "lucide-react";
+import { LogOut, Settings } from "lucide-react";
 
 import { LayoutDashboard } from "lucide-react";
 
@@ -23,7 +23,7 @@ interface UserButtonProps {
 }
 
 export default function UserButton({ user }: UserButtonProps) {
-  const user_role = user.role;
+  // const user_role = user.role;
   const handleLogout = async () => {
     "use server";
 
@@ -62,17 +62,6 @@ export default function UserButton({ user }: UserButtonProps) {
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
 
-        <DropdownMenuItem asChild>
-          {user_role === "admin" ? (
-            <Link
-              className="flex flex-row items-center justify-start gap-2"
-              href={`/${user.id}/admin-dashboard`}
-            >
-              <ShieldCheck className="h-4 w-4" />
-              Dashboard
-            </Link>
-          ) : null}
-        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
           <form action={handleLogout}>
