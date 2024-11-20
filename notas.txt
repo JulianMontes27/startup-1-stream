@@ -4,9 +4,6 @@ Pre: install shadcn (styles) X
 1. Autenticacion (auth js) X
 2. Prisma ORM con Mongo db (base de datos + ORM) X
 3. Setup auth flow X
-4. Basic  app functionalities:
-- Usuario entra al app
-- Poder buscar en un input el servicio que quiera
-- Los usuarios pueden ofrecer servicios y buscar
-
+4. State management (Zustand)
+5. Get user's geo location and display an input to search for any active service
 
