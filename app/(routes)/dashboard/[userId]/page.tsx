@@ -25,7 +25,6 @@ const UserHomePage = async () => {
       soughtServices: true, // Get services sought by the user
     },
   });
-  console.log(userWithServices);
 
   return (
     <div className="sm:p-2">

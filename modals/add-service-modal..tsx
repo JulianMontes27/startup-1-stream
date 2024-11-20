@@ -28,42 +28,59 @@ import {
 import { Input } from "@/components/ui/input";
 import toast from "react-hot-toast";
 
+import qs from "query-string";
+import { Button } from "@/components/ui/button";
+
+//model the form values to get from the form
 const formSchema = z.object({
-  quantity: z.string(),
-  price: z.string(),
-  name: z.string().min(0),
+  title: z.string().min(0).max(40),
+  description: z.string().min(0).max(40),
+  category: z.string().min(0).max(40),
+  price: z.string().min(0).max(40),
+  status: z.string().min(0).max(40),
+  location: z.string().min(0).max(40),
 });
 
 const AddOrderModal = () => {
-  const { isOpen, onClose, modalType, data } = useModalStore();
+  const { isOpen, onClose, modalType } = useModalStore();
   const router = useRouter();
   const params = useParams();
 
+  //get the offerer ID (user ID)
   if (!params) {
     router.push("/");
   }
-
+  //default values from form initialization
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      quantity: "",
+      title: "",
+      description: "",
+      category: "",
       price: "",
-      name: "",
+      status: "",
+      location: "",
     },
   });
-
+  //onsubmit hanlder
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      await axios.post(`/api/offer-service`, values);
+      const url = qs.stringifyUrl({
+        url: "/api/offer-service",
+        query: {
+          id: params?.userId,
+        },
+      });
+      await axios.post(url, values);
       form.reset();
       router.refresh();
-      toast.success("Orden agregada al Servicio.", {
+      toast.success("Servicio creado!", {
         position: "top-center",
       });
       onClose();
     } catch (error) {
       console.log(error);
-      toast.error("Ocurrió un error creando tu Orden.");
+      toast.error("Ocurrió un error creando tu Servicio.");
     }
   }
   return (
@@ -72,7 +89,7 @@ const AddOrderModal = () => {
       onOpenChange={onClose}
     >
       <DialogContent className="bg-white text-black sm:max-w-[425px] overflow-hidden rounded-md">
-        <DialogHeader className="py-3 px-3">
+        <DialogHeader className="py-2 px-2">
           <DialogTitle className="font-semibold text-2xl">
             <p>Agregar Orden</p> <br />
           </DialogTitle>
@@ -82,7 +99,49 @@ const AddOrderModal = () => {
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
               <FormField
                 control={form.control}
-                name="quantity"
+                name="title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Cantidad de items</FormLabel>
+                    <FormControl>
+                      <Input
+                        className="bg-white focus:ring-0 text-black "
+                        placeholder="1"
+                        {...field}
+                        disabled={form.formState.isSubmitting}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      Este es el numero de pedidos en la orden.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Cantidad de items</FormLabel>
+                    <FormControl>
+                      <Input
+                        className="bg-white focus:ring-0 text-black "
+                        placeholder="1"
+                        {...field}
+                        disabled={form.formState.isSubmitting}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      Este es el numero de pedidos en la orden.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="category"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Cantidad de items</FormLabel>
@@ -106,7 +165,7 @@ const AddOrderModal = () => {
                 name="price"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Precio</FormLabel>
+                    <FormLabel>Cantidad de items</FormLabel>
                     <FormControl>
                       <Input
                         className="bg-white focus:ring-0 text-black "
@@ -116,7 +175,7 @@ const AddOrderModal = () => {
                       />
                     </FormControl>
                     <FormDescription>
-                      Este es el precio (COP) de la Orden.
+                      Este es el numero de pedidos en la orden.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -124,31 +183,54 @@ const AddOrderModal = () => {
               />
               <FormField
                 control={form.control}
-                name="name"
+                name="status"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Pedido</FormLabel>
+                    <FormLabel>Cantidad de items</FormLabel>
                     <FormControl>
                       <Input
                         className="bg-white focus:ring-0 text-black "
-                        placeholder="Hamburguesa en combo"
+                        placeholder="1"
                         {...field}
                         disabled={form.formState.isSubmitting}
                       />
                     </FormControl>
-                    <FormDescription>Selecciona el pedido.</FormDescription>
+                    <FormDescription>
+                      Este es el numero de pedidos en la orden.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="location"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Cantidad de items</FormLabel>
+                    <FormControl>
+                      <Input
+                        className="bg-white focus:ring-0 text-black "
+                        placeholder="1"
+                        {...field}
+                        disabled={form.formState.isSubmitting}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      Este es el numero de pedidos en la orden.
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-              <button
+              <Button
                 type="submit"
-                className="w-full transform transition-transform duration-300 ease-in-out hover:scale-105 px-4 py-2 text-white rounded bg-blue-900"
+                className="w-full transform transition-transform duration-300 ease-in-out hover:scale-105 px-4 py-2 rounded-md text-white mt-3"
                 disabled={form.formState.isSubmitting}
               >
-                Añadir
-              </button>
+                Agregar servicio
+              </Button>
             </form>
           </Form>
         </div>
