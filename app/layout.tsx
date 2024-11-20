@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
+
+import { Toaster } from "react-hot-toast";
 import ModalProvider from "@/providers/modal-provider";
 
 const geistSans = localFont({
@@ -31,6 +33,7 @@ export default function RootLayout({
       >
         <ModalProvider />
         {children}
+        <Toaster />
       </body>
     </html>
   );

@@ -26,6 +26,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import toast from "react-hot-toast";
 
 const formSchema = z.object({
   quantity: z.string(),
@@ -41,6 +42,7 @@ const AddOrderModal = () => {
   if (!params) {
     router.push("/");
   }
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -52,10 +54,7 @@ const AddOrderModal = () => {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      await axios.post(
-        `/api/tables/${data.table?.id}/bills/${data?.bill?.id}/orders`,
-        values
-      );
+      await axios.post(`/api/offer-service`, values);
       form.reset();
       router.refresh();
       toast.success("Orden agregada al Servicio.", {
@@ -68,12 +67,14 @@ const AddOrderModal = () => {
     }
   }
   return (
-    <Dialog open={isOpen && modalType === "add-order"} onOpenChange={onClose}>
+    <Dialog
+      open={isOpen && modalType === "add-offered-service"}
+      onOpenChange={onClose}
+    >
       <DialogContent className="bg-white text-black sm:max-w-[425px] overflow-hidden rounded-md">
         <DialogHeader className="py-3 px-3">
           <DialogTitle className="font-semibold text-2xl">
             <p>Agregar Orden</p> <br />
-            <p className="text-[17px]">Mesa #{data.table?.tableNumber}</p>
           </DialogTitle>
         </DialogHeader>
         <div>
