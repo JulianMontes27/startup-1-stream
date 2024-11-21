@@ -6,6 +6,8 @@ Pre: install shadcn (styles) DONE
 3. Setup auth flow DONE
 4. State management (Zustand) DONE
 
+pre: fix the add-service modal
 
-5. Get user's geo location and display an input to search for any active service TOMORROW %%%%%
+- if the user agrees to let the app use their location, use the geolocation, if not, they have to manually setup their location
 
+6. Fix compliance and regulatory issues with geolocation

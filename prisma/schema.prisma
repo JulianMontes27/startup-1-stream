@@ -104,3 +104,16 @@ model Location {
 
 }
 
+//predefined categories for users' services
+enum ServiceCategory {
+  PERSONAL
+  HOME_IMPROVEMENT
+  TECHNOLOGY
+  AUTOMOTIVE
+  FOOD
+  CREATIVE
+  HEALTH
+  EDUCATION
+  TRANSPORTATION
+  MISCELLANEOUS
+}

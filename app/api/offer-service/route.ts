@@ -23,8 +23,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { title, price, category, latitude, longitude, description, status } =
-      body;
+    const { title, price, category, latitude, longitude, description } = body;
 
     // Validate request body
     const missingKeys = Object.keys(body).filter((key) => !body[key]);
@@ -40,14 +39,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    //query to the db with prisma ORM
+    //send query to create a new service in the DB
     const response = await prisma.service.create({
       data: {
         title,
         price,
         category,
         description,
-        status,
+        status: "available", //since the user JUST created the service, its avaible UNTIL another user pays them. As soon as the service is DONE, revert back to available status
         offererId: user?.id,
         location: {
           create: {

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { z } from "zod";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -19,7 +20,6 @@ import {
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -33,24 +33,54 @@ import { Button } from "@/components/ui/button";
 
 //model the form values to get from the form
 const formSchema = z.object({
-  title: z.string().min(0).max(40),
-  description: z.string().min(0).max(40),
-  category: z.string().min(0).max(40),
-  price: z.string().min(0).max(40),
-  status: z.string().min(0).max(40),
-  latitude: z.string().min(0).max(40),
-  longitude: z.string().min(0).max(50),
+  title: z.string().min(1, "Title is required").max(40),
+  description: z.string().min(1, "Description is required").max(40),
+  category: z.string().min(1, "Category is required").max(40),
+  price: z.string().min(1, "Price is required").max(40),
+  location: z.object({
+    latitude: z.string().optional(),
+    longitude: z.string().optional(),
+    city: z.string().optional(),
+  }),
 });
 
 const AddOrderModal = () => {
   const { isOpen, onClose, modalType } = useModalStore();
+  const [location, setLocation] = useState({
+    latitude: "",
+    longitude: "",
+    city: "",
+  });
+  const [checked, setChecked] = useState(false);
   const router = useRouter();
   const params = useParams();
 
+  useEffect(() => {
+    //ask for geolocation permissions at render
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setLocation({
+            latitude: position.coords.latitude.toString(),
+            longitude: position.coords.longitude.toString(),
+            city: "",
+          });
+        },
+        (error) => {
+          //ask for manual input of location
+          console.error("Error getting location:", error);
+        }
+      );
+    } else {
+      console.error("Geolocation is not supported by this browser.");
+    }
+  }, []);
+
   //get the offerer ID (user ID)
   if (!params) {
-    router.push("/");
+    return router.push("/");
   }
+
   //default values from form initialization
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -59,9 +89,11 @@ const AddOrderModal = () => {
       description: "",
       category: "",
       price: "",
-      status: "",
-      latitude: "",
-      longitude: "",
+      location: {
+        latitude: "",
+        longitude: "",
+        city: "",
+      },
     },
   });
   //onsubmit hanlder
@@ -90,32 +122,33 @@ const AddOrderModal = () => {
       open={isOpen && modalType === "add-offered-service"}
       onOpenChange={onClose}
     >
-      <DialogContent className="bg-white text-black sm:max-w-[425px] overflow-hidden rounded-md">
-        <DialogHeader className="py-2 px-2">
-          <DialogTitle className="font-semibold text-2xl">
-            <p>Agregar Orden</p> <br />
+      <DialogContent className="bg-white text-black sm:max-w-[425px] overflow-hidden rounded-md text-sm p-4">
+        <DialogHeader>
+          <DialogTitle className="font-semibold text-xl">
+            Crear Servicio{" "}
           </DialogTitle>
         </DialogHeader>
         <div>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="flex flex-col gap-4"
+            >
               <FormField
                 control={form.control}
                 name="title"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Cantidad de items</FormLabel>
+                    <FormLabel>Titulo del servicio</FormLabel>
                     <FormControl>
                       <Input
                         className="bg-white focus:ring-0 text-black "
-                        placeholder="1"
+                        placeholder="Carpinteria"
                         {...field}
                         disabled={form.formState.isSubmitting}
                       />
                     </FormControl>
-                    <FormDescription>
-                      Este es el numero de pedidos en la orden.
-                    </FormDescription>
+
                     <FormMessage />
                   </FormItem>
                 )}
@@ -125,18 +158,16 @@ const AddOrderModal = () => {
                 name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Cantidad de items</FormLabel>
+                    <FormLabel>Descripcion</FormLabel>
                     <FormControl>
                       <Input
                         className="bg-white focus:ring-0 text-black "
-                        placeholder="1"
+                        placeholder="Servicio de carpinteria exclusivo en Cartagena, Colombia."
                         {...field}
                         disabled={form.formState.isSubmitting}
                       />
                     </FormControl>
-                    <FormDescription>
-                      Este es el numero de pedidos en la orden.
-                    </FormDescription>
+
                     <FormMessage />
                   </FormItem>
                 )}
@@ -146,18 +177,18 @@ const AddOrderModal = () => {
                 name="category"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Cantidad de items</FormLabel>
+                    <FormLabel>Categoria</FormLabel>
                     <FormControl>
+                      {/* TODO: USER CAN CHOOSE FROM A LIST OF CATEGORIES */}
                       <Input
                         className="bg-white focus:ring-0 text-black "
-                        placeholder="1"
+                        placeholder="Mantenimiento y Mejoremiento de la Casa"
                         {...field}
                         disabled={form.formState.isSubmitting}
+                        type="text"
                       />
                     </FormControl>
-                    <FormDescription>
-                      Este es el numero de pedidos en la orden.
-                    </FormDescription>
+
                     <FormMessage />
                   </FormItem>
                 )}
@@ -167,85 +198,51 @@ const AddOrderModal = () => {
                 name="price"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Cantidad de items</FormLabel>
+                    <FormLabel>Precio ($/hora)</FormLabel>
                     <FormControl>
                       <Input
                         className="bg-white focus:ring-0 text-black "
-                        placeholder="1"
+                        placeholder="100.000 COP"
                         {...field}
                         disabled={form.formState.isSubmitting}
                       />
                     </FormControl>
-                    <FormDescription>
-                      Este es el numero de pedidos en la orden.
-                    </FormDescription>
+
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="status"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Cantidad de items</FormLabel>
-                    <FormControl>
-                      <Input
-                        className="bg-white focus:ring-0 text-black "
-                        placeholder="1"
-                        {...field}
-                        disabled={form.formState.isSubmitting}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      Este es el numero de pedidos en la orden.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="longitude"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Cantidad de items</FormLabel>
-                    <FormControl>
-                      <Input
-                        className="bg-white focus:ring-0 text-black "
-                        placeholder="1"
-                        {...field}
-                        disabled={form.formState.isSubmitting}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      Este es el numero de pedidos en la orden.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />{" "}
-              <FormField
-                control={form.control}
-                name="latitude"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Cantidad de items</FormLabel>
-                    <FormControl>
-                      <Input
-                        className="bg-white focus:ring-0 text-black "
-                        placeholder="1"
-                        {...field}
-                        disabled={form.formState.isSubmitting}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      Este es el numero de pedidos en la orden.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="flex flex-row gap-2">
+                <input
+                  id="checked"
+                  type="checkbox"
+                  checked={checked}
+                  onChange={() => setChecked((prev) => !prev)}
+                />
+                <label htmlFor="checked">Usar my ubicacion actual</label>
+              </div>
+              {!checked && (
+                <FormField
+                  control={form.control}
+                  name="location.city"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Ubicacion</FormLabel>
+                      <FormControl>
+                        <Input
+                          className="bg-white focus:ring-0 text-black "
+                          placeholder="Cartagena"
+                          {...field}
+                          disabled={form.formState.isSubmitting}
+                        />
+                      </FormControl>
+
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+
               <Button
                 type="submit"
                 className="w-full transform transition-transform duration-300 ease-in-out hover:scale-105 px-4 py-2 rounded-md text-white mt-3"
