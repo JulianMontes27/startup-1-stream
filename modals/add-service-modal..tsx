@@ -38,8 +38,6 @@ const formSchema = z.object({
   category: z.string().min(1, "Category is required").max(40),
   price: z.string().min(1, "Price is required").max(40),
   location: z.object({
-    latitude: z.string().optional(),
-    longitude: z.string().optional(),
     city: z.string().optional(),
   }),
 });
@@ -63,7 +61,7 @@ const AddOrderModal = () => {
           setLocation({
             latitude: position.coords.latitude.toString(),
             longitude: position.coords.longitude.toString(),
-            city: "",
+            city: "", //only if client's navigator doesnt return values
           });
         },
         (error) => {
@@ -90,9 +88,7 @@ const AddOrderModal = () => {
       category: "",
       price: "",
       location: {
-        latitude: "",
-        longitude: "",
-        city: "",
+        city: "", //optional city (mandatory only if client doesnt choose )
       },
     },
   });
@@ -100,7 +96,7 @@ const AddOrderModal = () => {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       const url = qs.stringifyUrl({
-        url: "/api/offer-service",
+        url: "/api/offer-service", //api url
         query: {
           id: params?.userId,
         },
