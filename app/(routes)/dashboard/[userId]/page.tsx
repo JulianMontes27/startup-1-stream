@@ -1,5 +1,3 @@
-import React from "react";
-
 import { auth } from "@/lib/auth";
 
 import prisma from "@/lib/prisma";
@@ -18,6 +16,7 @@ const UserHomePage = async () => {
       offererId: user.id,
     },
   });
+
   return (
     <div className="sm:p-2">
       <section>
