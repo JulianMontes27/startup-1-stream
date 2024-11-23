@@ -1,7 +1,4 @@
-// components/map/TestMap.tsx
 import dynamic from "next/dynamic";
-const DynamicMap = dynamic(() => import("@/components/map/actual-map"), {
-  ssr: false, // Disable server-side rendering
+const map = dynamic(() => import("@/components/map/actual-map"), {
+  ssr: false,
 });
-
-export default DynamicMap;

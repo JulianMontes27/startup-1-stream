@@ -1,18 +1,19 @@
 "use client";
 
-import MyMap from "@/components/map/test-map";
-import { useEffect, useRef } from "react";
+import dynamic from "next/dynamic";
 
-const TestPage = () => {
-  const isInitialized = useRef(false);
-  useEffect(() => {
-    isInitialized.current = true;
-    return () => {
-      isInitialized.current = false;
-    };
-  }, []);
-  if (!isInitialized) return null;
-  return <div><MyMap /></div>;
+// Dynamically import the map component (disable SSR)
+const MapComponent = dynamic(() => import("@/components/map/actual-map"), {
+  ssr: false,
+});
+
+const TestMapPage: React.FC = () => {
+  return (
+    <div className="p-7 mt-4">
+      <h1>Leaflet Map Example</h1>
+      <MapComponent />
+    </div>
+  );
 };
 
-export default TestPage;
+export default TestMapPage;
