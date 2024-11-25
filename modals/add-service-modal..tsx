@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { z } from "zod";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -9,7 +9,7 @@ import { useForm } from "react-hook-form";
 import axios from "axios";
 
 import useModalStore from "@/hooks/use-modal-store";
-import { useParams, useRouter } from "next/navigation";
+import { notFound, useParams, useRouter } from "next/navigation";
 
 import {
   Dialog,
@@ -30,6 +30,8 @@ import toast from "react-hot-toast";
 
 import qs from "query-string";
 import { Button } from "@/components/ui/button";
+import { useQuery } from "@tanstack/react-query";
+import { getLocation } from "@/lib/utils";
 
 //model the form values to get from the form
 const formSchema = z.object({
@@ -37,49 +39,21 @@ const formSchema = z.object({
   description: z.string().min(1, "Description is required").max(40),
   category: z.string().min(1, "Category is required").max(40),
   price: z.string().min(1, "Price is required").max(40),
-  location: z.object({
-    city: z.string().optional(),
-  }),
 });
 
 const AddOrderModal = () => {
   const { isOpen, onClose, modalType } = useModalStore();
-  const [location, setLocation] = useState({
-    latitude: "",
-    longitude: "",
-    city: "",
-  });
   const [checked, setChecked] = useState(false);
   const router = useRouter();
   const params = useParams();
 
-  useEffect(() => {
-    //ask for geolocation permissions at render
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setLocation({
-            latitude: position.coords.latitude.toString(),
-            longitude: position.coords.longitude.toString(),
-            city: "", //only if client's navigator doesnt return values
-          });
-        },
-        (error) => {
-          //ask for manual input of location
-          console.error("Error getting location:", error);
-        }
-      );
-    } else {
-      console.error("Geolocation is not supported by this browser.");
-    }
-  }, []);
+  const { data, isLoading, isError } = useQuery({
+    queryFn: getLocation,
+    queryKey: ["location"],
+    retry: false,
+  });
 
-  //get the offerer ID (user ID)
-  if (!params) {
-    return router.push("/");
-  }
-
-  //default values from form initialization
+  // Default values from form initialization
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -87,18 +61,17 @@ const AddOrderModal = () => {
       description: "",
       category: "",
       price: "",
-      location: {
-        city: "", //optional city (mandatory only if client doesnt choose )
-      },
     },
   });
-  //onsubmit hanlder
+
+  // Submit handler
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       const url = qs.stringifyUrl({
-        url: "/api/offer-service", //api url
+        url: "/api/offer-service", // API URL
         query: {
-          id: params?.userId,
+          longitude: data?.longitude,
+          latitude: data?.latitude,
         },
       });
       await axios.post(url, values);
@@ -109,10 +82,18 @@ const AddOrderModal = () => {
       });
       onClose();
     } catch (error) {
-      console.log(error);
+      console.error(error);
       toast.error("Ocurrió un error creando tu Servicio.");
     }
   }
+
+  // Render fallback or main UI
+  if (!params) {
+    return notFound();
+  }
+  if (isLoading) return <div>Loading...</div>;
+  if (isError) return <div>Sorry There was an Error</div>;
+
   return (
     <Dialog
       open={isOpen && modalType === "add-offered-service"}
@@ -144,7 +125,6 @@ const AddOrderModal = () => {
                         disabled={form.formState.isSubmitting}
                       />
                     </FormControl>
-
                     <FormMessage />
                   </FormItem>
                 )}
@@ -163,7 +143,6 @@ const AddOrderModal = () => {
                         disabled={form.formState.isSubmitting}
                       />
                     </FormControl>
-
                     <FormMessage />
                   </FormItem>
                 )}
@@ -175,7 +154,6 @@ const AddOrderModal = () => {
                   <FormItem>
                     <FormLabel>Categoria</FormLabel>
                     <FormControl>
-                      {/* TODO: USER CAN CHOOSE FROM A LIST OF CATEGORIES */}
                       <Input
                         className="bg-white focus:ring-0 text-black "
                         placeholder="Mantenimiento y Mejoremiento de la Casa"
@@ -184,7 +162,6 @@ const AddOrderModal = () => {
                         type="text"
                       />
                     </FormControl>
-
                     <FormMessage />
                   </FormItem>
                 )}
@@ -203,7 +180,6 @@ const AddOrderModal = () => {
                         disabled={form.formState.isSubmitting}
                       />
                     </FormControl>
-
                     <FormMessage />
                   </FormItem>
                 )}
@@ -215,29 +191,8 @@ const AddOrderModal = () => {
                   checked={checked}
                   onChange={() => setChecked((prev) => !prev)}
                 />
-                <label htmlFor="checked">Usar my ubicacion actual</label>
+                <label htmlFor="checked">Usar mi ubicación actual</label>
               </div>
-              {!checked && (
-                <FormField
-                  control={form.control}
-                  name="location.city"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Ubicacion</FormLabel>
-                      <FormControl>
-                        <Input
-                          className="bg-white focus:ring-0 text-black "
-                          placeholder="Cartagena"
-                          {...field}
-                          disabled={form.formState.isSubmitting}
-                        />
-                      </FormControl>
-
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              )}
 
               <Button
                 type="submit"

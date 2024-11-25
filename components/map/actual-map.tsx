@@ -6,9 +6,18 @@ import "leaflet-defaulticon-compatibility";
 
 import L from "leaflet";
 
-const ActualMap: React.FC = () => {
+interface ActualMapProps {
+  category: string;
+  userLocation: { latitude: number; longitude: number } | undefined;
+}
+
+const ActualMap: React.FC<ActualMapProps> = ({ category, userLocation }) => {
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
+
+  if (userLocation === undefined) {
+    return <div>No user location.</div>;
+  }
 
   useEffect(() => {
     if (mapInstanceRef.current) return; // Prevent multiple initializations
@@ -16,7 +25,7 @@ const ActualMap: React.FC = () => {
     if (mapContainerRef.current) {
       // Initialize map only if the container is available
       mapInstanceRef.current = L.map(mapContainerRef.current).setView(
-        [10.391, -75.4797], // Coordinates for Cartagena, Colombia
+        [userLocation.latitude, userLocation.longitude], //users location
         13
       );
 
@@ -26,7 +35,7 @@ const ActualMap: React.FC = () => {
       }).addTo(mapInstanceRef.current);
 
       // Adding a marker to the map
-      L.marker([51.505, -0.09])
+      L.marker([userLocation.latitude, userLocation.longitude])
         .addTo(mapInstanceRef.current)
         .bindPopup("This is a marker!");
     }

@@ -25,11 +25,13 @@ const UserHomePage = async () => {
           {services?.length === 0 ? (
             <AddServiceBtn />
           ) : (
-            services?.map((serv) => {
-              console.log(serv);
+            services?.map((service) => {
               return (
-                <Link href={`$dashboard/${user.id}/offered-service/${serv.id}`}>
-                  {serv.title}
+                <Link
+                  key={service.id}
+                  href={`/dashboard/${user.id}/offered-services/${service.id}`}
+                >
+                  {service.title}
                 </Link>
               );
             })

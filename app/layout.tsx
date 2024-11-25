@@ -4,6 +4,7 @@ import "./globals.css";
 
 import { Toaster } from "react-hot-toast";
 import ModalProvider from "@/providers/modal-provider";
+import { ReactQueryClientProvider } from "@/providers/query-provider";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -27,14 +28,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <ModalProvider />
-        {children}
-        <Toaster />
-      </body>
-    </html>
+    <ReactQueryClientProvider>
+      <html lang="en">
+        <body
+          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        >
+          {children}
+          <ModalProvider />
+          <Toaster />
+        </body>
+      </html>
+    </ReactQueryClientProvider>
   );
 }

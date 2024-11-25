@@ -3,6 +3,25 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
 export async function POST(req: NextRequest) {
+  // Extract search params
+  const searchParams = req.nextUrl.searchParams;
+  const longitude = searchParams.get("longitude");
+  const latitude = searchParams.get("latitude");
+
+  // Validate longitude and latitude
+  if (!longitude || isNaN(parseFloat(longitude))) {
+    return NextResponse.json(
+      { message: "Invalid or missing 'longitude' parameter." },
+      { status: 400 }
+    );
+  }
+  if (!latitude || isNaN(parseFloat(latitude))) {
+    return NextResponse.json(
+      { message: "Invalid or missing 'latitude' parameter." },
+      { status: 400 }
+    );
+  }
+
   // Authenticate the user
   const session = await auth();
   const user = session?.user;
@@ -17,17 +36,21 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    // Parse and validate request body
     const body = await req.json();
-    const { title, price, category, description, loc } = body;
+    if (!body || typeof body !== "object") {
+      return NextResponse.json(
+        { message: "Invalid or missing request body." },
+        { status: 400 }
+      );
+    }
 
-    // Validate request body
-    const missingKeys = [
-      "title",
-      "price",
-      "category",
-      "description",
-      "loc",
-    ].filter((key) => !body[key]);
+    const { title, description, category, price } = body;
+
+    // Validate body fields
+    const missingKeys = ["title", "price", "category", "description"].filter(
+      (key) => !body[key]
+    );
     if (missingKeys.length > 0) {
       return NextResponse.json(
         {
@@ -43,24 +66,24 @@ export async function POST(req: NextRequest) {
     const response = await prisma.service.create({
       data: {
         title,
-        price,
+        price: parseFloat(price), // Ensure price is a Float
         category,
         description,
         status: "available", // Initial status is 'available'
         offererId: user.id,
         location: {
           create: {
-            longitude: loc.longitude,
-            latitude: loc.latitude,
+            longitude: parseFloat(longitude),
+            latitude: parseFloat(latitude),
           },
         },
       },
     });
 
     // Successful Prisma query
-    return NextResponse.json(response, { status: 201 });
+    return NextResponse.json(response);
   } catch (error) {
-    console.error(error);
+    console.error("Error in POST handler:", error);
     return NextResponse.json(
       { message: "Internal Server Error. Try again later." },
       { status: 500 }
