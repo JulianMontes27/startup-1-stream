@@ -7,7 +7,7 @@ interface ServicePageParams {
 }
 
 const ServicePage: React.FC<ServicePageParams> = async ({ params }) => {
-  const { serviceId } = await params; // Await params to ensure it's resolved.
+  const { serviceId } =  params; // Await params to ensure it's resolved.
 
   return <div>ServicePage for ID: {serviceId}</div>;
 };

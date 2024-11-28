@@ -21,20 +21,22 @@ const UserHomePage = async () => {
     <div className="sm:p-2">
       <section>
         {/* show if the user is currently offering services */}
+
         <ul>
           {services?.length === 0 ? (
             <AddServiceBtn />
           ) : (
-            services?.map((service) => {
-              return (
+            <div>
+              <h1>Your active service:</h1>
+              {services?.map((service) => (
                 <Link
                   key={service.id}
                   href={`/dashboard/${user.id}/offered-services/${service.id}`}
                 >
                   {service.title}
                 </Link>
-              );
-            })
+              ))}
+            </div>
           )}
         </ul>
       </section>

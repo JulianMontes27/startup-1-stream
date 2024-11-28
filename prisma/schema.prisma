@@ -18,13 +18,16 @@ model User {
   accounts      Account[]
   sessions      Session[]
 
+  convosInitiated Conversation[] @relation("MemberOne") //#member-one for this user (seeker)
+  convosReceived Conversation[] @relation("MemberTwo") //#member-two (offerer)
+
+  directMessages DirectMessage[]
+
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
   @@map("users")
 }
-
-
 
 // Model for accounts (social login, etc.)
 model Account {
@@ -85,13 +88,12 @@ model Service {
   status      String
   location    Location?
   offererId   String   
-  seekerId    String?  
+  seekerId    String?  //once a user accepts 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   @@map("services")
 }
-
 
 model Location {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
@@ -103,6 +105,45 @@ model Location {
   @@map("locations")
 
 }
+
+//Chat between two users
+//unique collection of Messages between two Users
+model Conversation {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  memberOneId   String   @db.ObjectId // Add @db.ObjectId to ensure type consistency
+  memberOne     User     @relation("MemberOne", fields: [memberOneId], references: [id], onDelete: Cascade)
+
+  memberTwoId   String   @db.ObjectId // Ensure memberTwoId is also @db.ObjectId
+  memberTwo     User     @relation("MemberTwo", fields: [memberTwoId], references: [id], onDelete: Cascade)
+
+  directMessages DirectMessage[]
+
+  @@unique([memberOneId, memberTwoId]) // each Conversation must be unique. There can't be two copies of the same Conversation (same Members)
+  @@map("convos")
+}
+
+
+//Messages for Conversations
+model DirectMessage {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  content       String   // Change from @db.Text to String
+  fileUrl       String?  // Change from @db.Text to String
+
+  userId        String   @db.ObjectId
+  seeker        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  conversationId String   @db.ObjectId
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  deleted       Boolean  @default(false)
+
+  @@map("direct_messages")
+}
+
+
 
 //predefined categories for users' services
 enum ServiceCategory {
