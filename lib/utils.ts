@@ -1,6 +1,7 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import axios from "axios";
+import prisma from "./prisma";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -91,5 +92,52 @@ export const getAddressFromCoordinates = async (
   }
 };
 
-export const findOrCreateConversation = async () => {};
+export const findOrCreateConversation = async (
+  seekerId: string,
+  offererId: string
+) => {
+  let convo =
+    (await findConversation(seekerId, offererId)) ||
+    (await findConversation(offererId, seekerId));
 
+  if (!convo) {
+    convo = await createConversation(seekerId, offererId);
+  }
+
+  return convo;
+};
+
+const findConversation = async (seekerId: string, offererId: string) => {
+  try {
+    return await prisma.conversation.findFirst({
+      where: {
+        AND: [{ seekerId: seekerId }, { offererId: offererId }],
+      },
+      include: {
+        seeker: true,
+        offerer: true,
+      },
+    });
+  } catch {
+    return null; //to not block the app
+  }
+};
+
+const createConversation = async (seekerId: string, offererId: string) => {
+  try {
+    //create Conversation
+    const convo = await prisma.conversation.create({
+      data: {
+        seekerId: seekerId,
+        offererId: offererId,
+      },
+      include: {
+        seeker: true,
+        offerer: true,
+      },
+    });
+    return convo;
+  } catch {
+    return null;
+  }
+};

@@ -18,8 +18,8 @@ model User {
   accounts      Account[]
   sessions      Session[]
 
-  convosInitiated Conversation[] @relation("MemberOne") //#member-one for this user (seeker)
-  convosReceived Conversation[] @relation("MemberTwo") //#member-two (offerer)
+  convosInitiated Conversation[] @relation("Seeker") //#member-one for this user (seeker)
+  convosReceived Conversation[] @relation("Offerer") //#member-two (offerer)
 
   directMessages DirectMessage[]
 
@@ -110,15 +110,15 @@ model Location {
 //unique collection of Messages between two Users
 model Conversation {
   id            String   @id @default(auto()) @map("_id") @db.ObjectId
-  memberOneId   String   @db.ObjectId // Add @db.ObjectId to ensure type consistency
-  memberOne     User     @relation("MemberOne", fields: [memberOneId], references: [id], onDelete: Cascade)
+  seekerId   String   @db.ObjectId // Add @db.ObjectId to ensure type consistency
+  seeker     User     @relation("Seeker", fields: [seekerId], references: [id], onDelete: Cascade)
 
-  memberTwoId   String   @db.ObjectId // Ensure memberTwoId is also @db.ObjectId
-  memberTwo     User     @relation("MemberTwo", fields: [memberTwoId], references: [id], onDelete: Cascade)
+  offererId   String   @db.ObjectId // Ensure memberTwoId is also @db.ObjectId
+  offerer     User     @relation("Offerer", fields: [offererId], references: [id], onDelete: Cascade)
 
   directMessages DirectMessage[]
 
-  @@unique([memberOneId, memberTwoId]) // each Conversation must be unique. There can't be two copies of the same Conversation (same Members)
+  @@unique([seekerId, offererId]) // each Conversation must be unique. There can't be two copies of the same Conversation (same Members)
   @@map("convos")
 }
 

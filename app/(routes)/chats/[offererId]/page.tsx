@@ -1,7 +1,9 @@
-import prisma from "@/lib/prisma";
 import getSession from "@/lib/get-session";
 import { redirect } from "next/navigation";
 import { findOrCreateConversation } from "@/lib/utils";
+import ChatHeader from "@/components/chats/chat-header";
+import MessagesComponent from "@/components/chats/chat-messages";
+import ChatInput from "@/components/chats/chat-input";
 
 //this page shows the Conversation instance that the currently signed-in User has with the service Offerer
 export default async function ChatWithOffererPage({
@@ -13,51 +15,41 @@ export default async function ChatWithOffererPage({
   const offererId = (await params).offererId;
 
   const session = await getSession();
-  if (!session?.user) return null;
+  const user = session?.user;
+  if (!user?.id) return redirect("/");
 
-  //search for an existing Conversation between both Members
+  //search for an existing Conversation between both Users
+  //Conversation stores the Direct Messages between the Users
   const conversation = await findOrCreateConversation(
-    currentMember.id,
-    params.memberId //the Member that receives the Conversation iniciation
+    user.id,
+    offererId //the Offerer that receives the Conversation iniciation
   );
   if (!conversation) return redirect(`/`); //automatically go to the general channel
 
-  const { memberOne, memberTwo } = conversation;
+  const { seeker, offerer } = conversation;
 
-  const otherMember =
-    memberOne.profileId === profile.id ? memberTwo : memberOne;
-  //since we want to get the OTHER member, if the membeOne.id is the current profile.id, then the other member is memberTwo
-  if (!otherMember) return redirect(`/}`);
+  const otherUser = seeker.id === user.id ? offerer : seeker;
+  //since we want to get the OTHER user, if the seeker.id is the current user.id, then the other user is the offerer
+  if (!otherUser.image) return redirect(`/}`);
 
   return (
-    <div className="flex flex-col h-full relative">
-      <MessageHeader
-        type={"conversation"}
-        serverId={params.serverId}
-        memberToReceive={otherMember}
-        imageUrl={otherMember.profile.imgUrl}
-      />
+    <div className="flex flex-col h-full sm:p-3">
+      <ChatHeader userToReceiveMessage={otherUser} imageUrl={otherUser.image} />
       <div className="flex-1">
         <MessagesComponent
-          type={"conversation"}
-          name={otherMember.profile.name || ""}
-          member={currentMember}
+          name={otherUser.name || ""}
+          member={seeker}
           chatId={conversation.id}
           apiUrl={"/api/messages"}
           socketUrl={"/api/socket/messages"}
-          socketQuery={{
-            conversationId: conversation.id,
-            serverId: params.serverId,
-          }}
-          paramKey={"channelId"}
-          paramValue={conversation.id}
         />
       </div>
       <ChatInput
-        apiUrl={"/api/socket/messages"}
-        query={{}}
-        name={otherMember.profile.name || ""}
-        type={"conversation"}
+        apiUrl={"/api/socket/chat/message"}
+        name={otherUser.name || ""}
+        query={{
+          userToSendToId: otherUser.id,
+        }}
       />
     </div>
   );
